@@ -64,8 +64,31 @@
   .row .field { flex: 1; min-width: 180px; }
   .settings-actions { display:flex; gap: 10px; align-items:center; }
 
+  /* Snapshot row — all channels at a glance */
+  .section-title { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin: 0 4px 12px; }
+  #snapshot { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  #snapshot:empty { display: none; }
+  .snap {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; cursor: pointer; transition: .15s; text-align: left;
+  }
+  .snap:hover { border-color: #3a414f; background: var(--panel-2); transform: translateY(-2px); }
+  .snap-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .snap-head img { width: 38px; height: 38px; border-radius: 50%; background: var(--panel-2); object-fit: cover; flex: none; }
+  .snap-head .name { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .snap-head .handle { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .snap-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .snap-stat { text-align: center; }
+  .snap-stat .num { font-size: 18px; font-weight: 750; letter-spacing: -.4px; }
+  .snap-stat .lbl { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .4px; margin-top: 1px; }
+  .snap.error { cursor: default; color: #ff8f87; font-size: 13px; }
+  .snap.error:hover { transform: none; border-color: var(--border); background: var(--panel); }
+
   /* Cards */
-  #cards { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  .card.flash { animation: flash 1.1s ease; }
+  @keyframes flash { 0%,100% { box-shadow: 0 0 0 0 var(--accent-soft); } 30% { box-shadow: 0 0 0 3px var(--accent-soft); border-color: var(--accent); } }
+  #cards { display: grid; grid-template-columns: 1fr; gap: 20px; scroll-margin-top: 88px; }
+  .card { scroll-margin-top: 88px; }
   .card { background: var(--panel); border:1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   .card-head { display:flex; align-items:center; gap: 14px; padding: 18px 20px; }
   .card-head img { width: 56px; height: 56px; border-radius: 50%; background: var(--panel-2); object-fit: cover; }
@@ -96,6 +119,54 @@
   .skeleton { background: linear-gradient(90deg,#1c2027 25%,#242a34 37%,#1c2027 63%); background-size: 400% 100%; animation: sh 1.3s ease infinite; }
   @keyframes sh { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
   .empty { text-align:center; color: var(--muted); padding: 60px 20px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 6px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .tab {
+    background: none; border: none; border-bottom: 2px solid transparent; border-radius: 0;
+    padding: 10px 16px; color: var(--muted); font-weight: 600; margin-bottom: -1px;
+  }
+  .tab:hover { background: none; color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab .count { color: var(--muted); font-weight: 500; font-size: 12px; margin-left: 6px; }
+
+  /* Aggregate header (Clients tab) */
+  .agg {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 20px; text-align: center;
+  }
+  .agg .num { font-size: 30px; font-weight: 800; letter-spacing: -.6px; }
+  .agg .lbl { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+  .agg .note { color: var(--muted); font-size: 11px; margin-top: 6px; line-height: 1.35; }
+  .agg.muted .num { color: var(--muted); font-weight: 750; }
+
+  /* Period filter + recent-activity row */
+  .period-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 4px 10px; }
+  .period-head .section-title { margin: 0; }
+  .period-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pfilter {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px;
+    padding: 4px 12px; font-size: 12px; font-weight: 600; color: var(--muted);
+  }
+  .pfilter:hover { color: var(--text); background: #262b35; }
+  .pfilter.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .period-note { font-size: 12px; color: var(--muted); margin: 0 4px 14px; }
+  #period-snapshot { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  #period-snapshot:empty { display: none; }
+  .snap-stat .num.zero { color: var(--muted); font-weight: 600; }
+  .snap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .snap-grid:empty { display: none; }
+  .agg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .agg-grid:empty { display: none; }
+
+  /* Category editor (Settings) */
+  .cat-row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
+  .cat-row .cat-name { flex: none; width: 150px; }
+  .cat-row textarea { min-height: 64px; }
+  .cat-row .cat-del {
+    flex: none; padding: 8px 10px; color: var(--muted); align-self: stretch;
+  }
+  .cat-row .cat-del:hover { color: #ff8f87; border-color: #ff8f87; }
 </style>
 </head>
 <body>
@@ -119,6 +190,11 @@
       <label>Channels <span class="sub">— one per line. Handle (<code>@mkbhd</code>), channel ID (<code>UC...</code>), or full URL.</span></label>
       <textarea id="channels" placeholder="@mkbhd&#10;@veritasium&#10;UCXuqSBlHAE6Xw-yeJA0Tunw"></textarea>
     </div>
+    <div class="field">
+      <label>Categories <span class="sub">— each becomes its own tab (e.g. Clients, Personal) with aggregates &amp; a recent-activity row. List the channels in each, one per line. Channels need not be in the box above.</span></label>
+      <div id="catEditor"></div>
+      <button type="button" id="addCatBtn">+ Add category</button>
+    </div>
     <div class="row">
       <div class="field" style="max-width:200px">
         <label>Recent videos to show</label>
@@ -133,8 +209,26 @@
     </div>
   </section>
 
-  <section id="cards"></section>
-  <div class="empty" id="empty" hidden>No channels yet — open <b>⚙ Settings</b> to add your API key and channels.</div>
+  <nav class="tabs" id="tabs" hidden></nav>
+
+  <div id="panel-all">
+    <div class="section-title" id="snapshotTitle" hidden>All-time</div>
+    <section id="snapshot"></section>
+
+    <div class="period-head" id="periodHead" hidden>
+      <div class="section-title">Recent activity</div>
+      <div class="period-filters" id="periodFilters"></div>
+    </div>
+    <p class="period-note" id="periodNote" hidden>Videos <b>published</b> in the window, with their current (lifetime) views &amp; likes. The Data API can't report true per-period views or watch time — that needs OAuth + the Analytics API.</p>
+    <section id="period-snapshot"></section>
+
+    <div class="section-title" id="detailTitle" hidden>Details</div>
+    <section id="cards"></section>
+    <div class="empty" id="empty" hidden>No channels yet — open <b>⚙ Settings</b> to add your API key and channels.</div>
+  </div>
+
+  <!-- One panel per user-defined category, built in JS -->
+  <div id="category-panels"></div>
 </main>
 
 <script>
@@ -150,6 +244,21 @@ function loadConfig() {
   catch { return {}; }
 }
 function saveConfig(c) { localStorage.setItem(LS_KEY, JSON.stringify(c)); }
+
+/* Categories = user-defined tabs (Clients, Personal, …). Each has a name + channel list.
+   Migrates the old single `clients` list into a default "Clients" category. */
+function getCategories() {
+  if (Array.isArray(CONFIG.categories) && CONFIG.categories.length) {
+    return CONFIG.categories.map(c => ({
+      name: (c.name || 'Category').trim() || 'Category',
+      channels: (c.channels || []).map(s => s.trim()).filter(Boolean),
+    }));
+  }
+  return [
+    { name: 'Clients', channels: (CONFIG.clients || []).map(s => s.trim()).filter(Boolean) },
+    { name: 'Personal', channels: [] },
+  ];
+}
 
 /* ---------- formatting ---------- */
 function fmt(n) {
@@ -287,6 +396,37 @@ function renderCard(card, channel, videos) {
     </div>`;
 }
 
+function renderSnap(snap, channel, cardId) {
+  const s = channel.statistics || {};
+  const sn = channel.snippet || {};
+  const subs = s.hiddenSubscriberCount ? 'Hidden' : fmt(s.subscriberCount);
+  const thumb = sn.thumbnails?.default?.url || '';
+  const handle = sn.customUrl ? (sn.customUrl.startsWith('@') ? sn.customUrl : '@' + sn.customUrl) : '';
+
+  snap.className = 'snap';
+  snap.innerHTML = `
+    <div class="snap-head">
+      <img src="${thumb}" alt="" loading="lazy" />
+      <div style="min-width:0">
+        <div class="name">${esc(sn.title || channel.id)}</div>
+        <div class="handle">${esc(handle)}</div>
+      </div>
+    </div>
+    <div class="snap-stats">
+      <div class="snap-stat"><div class="num" title="${exact(s.subscriberCount)}">${subs}</div><div class="lbl">Subs</div></div>
+      <div class="snap-stat"><div class="num" title="${exact(s.viewCount)}">${fmt(s.viewCount)}</div><div class="lbl">Views</div></div>
+      <div class="snap-stat"><div class="num" title="${exact(s.videoCount)}">${fmt(s.videoCount)}</div><div class="lbl">Videos</div></div>
+    </div>`;
+  snap.onclick = () => {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    card.classList.remove('flash');
+    void card.offsetWidth; // restart animation
+    card.classList.add('flash');
+  };
+}
+
 function esc(str) {
   return String(str).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
@@ -302,59 +442,372 @@ function skeletonCard(label) {
   return c;
 }
 
+/* Normalize a channel token/URL/handle for client matching. */
+function normToken(s) {
+  return String(s).trim().toLowerCase()
+    .replace(/^https?:\/\/(www\.)?youtube\.com\//, '')
+    .replace(/^@/, '').replace(/\/+$/, '');
+}
+// Does a loaded result belong to a category whose channel list is `tokenList`?
+function channelInList(r, tokenList) {
+  const set = new Set((tokenList || []).map(normToken).filter(Boolean));
+  if (!set.size) return false;
+  const sn = r.channel?.snippet || {};
+  const candidates = [r.token, r.channel?.id, sn.customUrl].filter(Boolean).map(normToken);
+  return candidates.some(c => set.has(c));
+}
+
+/* ---------- aggregate header (category tabs) ---------- */
+function aggBlock(num, label, note, muted) {
+  return `<div class="agg${muted ? ' muted' : ''}">
+    <div class="num">${num}</div><div class="lbl">${label}</div>
+    ${note ? `<div class="note">${note}</div>` : ''}
+  </div>`;
+}
+function renderAggInto(el, results) {
+  let subs = 0, views = 0, vids = 0, hiddenSubs = 0;
+  for (const r of results) {
+    const s = r.channel.statistics || {};
+    if (s.hiddenSubscriberCount) hiddenSubs++; else subs += Number(s.subscriberCount) || 0;
+    views += Number(s.viewCount) || 0;
+    vids += Number(s.videoCount) || 0;
+  }
+  const subsNote = hiddenSubs ? `${hiddenSubs} channel${hiddenSubs > 1 ? 's' : ''} hide subs` : '';
+  el.innerHTML =
+    aggBlock(fmt(subs), 'Total Subscribers', subsNote, false) +
+    aggBlock(fmt(views), 'Total Views', exact(views), false) +
+    aggBlock(fmt(vids), 'Total Videos', '', false) +
+    aggBlock('—', 'Watch Time', 'Needs OAuth + YouTube Analytics API (not available with an API key)', true);
+}
+
+/* ---------- recent-activity period row ---------- */
+const ANALYZE_COUNT = 50; // uploads fetched per channel for period analysis (API max per page)
+let LAST_RESULTS = [];     // results of the most recent load(), for re-filtering without refetch
+
+const DAY = 86400000;
+const PERIODS = [
+  { key: '7d',  label: 'Last 7 days',   start: () => Date.now() - 7 * DAY },
+  { key: '28d', label: 'Last 28 days',  start: () => Date.now() - 28 * DAY },
+  { key: 'mtd', label: 'Month to date', start: () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1).getTime(); } },
+  { key: '90d', label: 'Last 90 days',  start: () => Date.now() - 90 * DAY },
+  { key: 'ytd', label: 'Year to date',  start: () => { const d = new Date(); return new Date(d.getFullYear(), 0, 1).getTime(); } },
+];
+function currentPeriod() { return PERIODS.find(p => p.key === CONFIG.period) || PERIODS[1]; }
+
+// Stats for videos PUBLISHED within [start, now]. Views/likes are lifetime totals.
+function periodStats(videos, startMs) {
+  let views = 0, likes = 0, count = 0, oldest = Infinity;
+  for (const v of videos) {
+    const t = new Date(v.snippet?.publishedAt).getTime();
+    if (!isFinite(t)) continue;
+    oldest = Math.min(oldest, t);
+    if (t >= startMs) {
+      count++;
+      views += Number(v.statistics?.viewCount) || 0;
+      likes += Number(v.statistics?.likeCount) || 0;
+    }
+  }
+  // If we fetched the page limit and even the oldest fetched upload is inside the
+  // window, there may be more uploads in the window we didn't fetch.
+  const capped = videos.length >= ANALYZE_COUNT && oldest >= startMs;
+  return { count, views, likes, capped };
+}
+
+function periodStatCell(num, label) {
+  const cls = num === 0 ? ' zero' : '';
+  return `<div class="snap-stat"><div class="num${cls}">${fmt(num)}</div><div class="lbl">${label}</div></div>`;
+}
+
+// All views (All-tab + each category) share one period selection.
+// Each entry: filter bar + row + head + note + which results it shows + its card-id mapper.
+function periodViews() {
+  const views = [{
+    bar: '#periodFilters', row: '#period-snapshot', head: '#periodHead', note: '#periodNote',
+    filter: r => r.inMain, cardId: r => r.cardId,
+  }];
+  getCategories().forEach((cat, ci) => {
+    views.push({
+      bar: `#cat-pfilters-${ci}`, row: `#period-snapshot-cat-${ci}`,
+      head: `#cat-phead-${ci}`, note: `#cat-pnote-${ci}`,
+      filter: r => channelInList(r, cat.channels),
+      cardId: (r, i) => `cat-${ci}-card-${i}`,
+    });
+  });
+  return views;
+}
+
+function renderPeriodFilters() {
+  const active = currentPeriod().key;
+  const html = PERIODS.map(p =>
+    `<button class="pfilter${p.key === active ? ' active' : ''}" data-period="${p.key}">${p.label}</button>`).join('');
+  for (const v of periodViews()) {
+    const bar = $(v.bar);
+    if (!bar) continue;
+    bar.innerHTML = html;
+    bar.querySelectorAll('.pfilter').forEach(b => b.addEventListener('click', () => {
+      CONFIG.period = b.dataset.period;
+      saveConfig(CONFIG);
+      renderPeriodFilters();
+      renderPeriodRow();
+    }));
+  }
+}
+
+function periodTile(r, startMs, cardId) {
+  const st = periodStats(r.videos, startMs);
+  const sn = r.channel.snippet || {};
+  const thumb = sn.thumbnails?.default?.url || '';
+  const handle = sn.customUrl ? (sn.customUrl.startsWith('@') ? sn.customUrl : '@' + sn.customUrl) : '';
+  const vidLabel = st.capped ? (st.count + '+') : st.count;
+
+  const snap = document.createElement('div');
+  snap.className = 'snap';
+  snap.innerHTML = `
+    <div class="snap-head">
+      <img src="${thumb}" alt="" loading="lazy" />
+      <div style="min-width:0">
+        <div class="name">${esc(sn.title || r.channel.id)}</div>
+        <div class="handle">${esc(handle)}</div>
+      </div>
+    </div>
+    <div class="snap-stats">
+      <div class="snap-stat"><div class="num${st.count === 0 ? ' zero' : ''}">${vidLabel}</div><div class="lbl">Videos</div></div>
+      ${periodStatCell(st.views, 'Views')}
+      ${periodStatCell(st.likes, 'Likes')}
+    </div>`;
+  if (cardId) {
+    snap.style.cursor = 'pointer';
+    snap.onclick = () => {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+    };
+  }
+  return snap;
+}
+
+function renderPeriodRow() {
+  const startMs = currentPeriod().start();
+  for (const v of periodViews()) {
+    const el = $(v.row);
+    if (!el) continue;
+    const rows = LAST_RESULTS.filter(v.filter);
+    const show = rows.length > 0;
+    if ($(v.head)) $(v.head).hidden = !show;
+    if ($(v.note)) $(v.note).hidden = !show;
+    el.innerHTML = '';
+    if (!show) continue;
+    rows.forEach((r, i) => el.appendChild(periodTile(r, startMs, v.cardId(r, i))));
+  }
+}
+
 /* ---------- main load ---------- */
 async function load() {
   const cardsEl = $('#cards');
+  const snapEl = $('#snapshot');
   const emptyEl = $('#empty');
   cardsEl.innerHTML = '';
+  snapEl.innerHTML = '';
+  $('#period-snapshot').innerHTML = '';
+  $('#periodHead').hidden = true;
+  $('#periodNote').hidden = true;
 
   const channels = (CONFIG.channels || []).map(s => s.trim()).filter(Boolean);
-  if (!CONFIG.apiKey || !channels.length) {
+  const categories = getCategories();
+  const mainSet = new Set(channels.map(normToken));
+
+  // Build the tabs + an empty panel per category (so render targets exist).
+  buildTabs(categories);
+  buildCategoryPanels(categories);
+
+  // Fetch the union of main channels + every category's channels (deduped), so a
+  // channel listed only in a category still loads. Main-list tokens win on order.
+  const seen = new Set();
+  const fetchList = [];
+  const allTokens = channels.concat(...categories.map(c => c.channels));
+  for (const token of allTokens) {
+    const key = normToken(token);
+    if (key && !seen.has(key)) { seen.add(key); fetchList.push(token); }
+  }
+
+  const hasAny = CONFIG.apiKey && fetchList.length;
+  $('#tabs').hidden = !hasAny;
+  $('#snapshotTitle').hidden = !channels.length;
+  $('#detailTitle').hidden = !channels.length;
+  if (!hasAny) {
     emptyEl.hidden = false;
-    if (!CONFIG.apiKey || !channels.length) openSettings(true);
+    LAST_RESULTS = [];
+    openSettings(true);
     return;
   }
-  emptyEl.hidden = true;
+  emptyEl.hidden = channels.length > 0;
   const count = CONFIG.recentCount || 5;
+  const results = []; // {token, channel, videos} for successfully loaded channels
 
-  // Create a card per channel up-front, then fill in parallel.
-  const tasks = channels.map(token => {
-    const card = skeletonCard(token);
-    cardsEl.appendChild(card);
+  // For each channel to fetch: main-list channels get an All-tab card + snapshot
+  // tile up front; client-only channels are fetched silently for the Clients tab.
+  const tasks = fetchList.map((token, i) => {
+    const inMain = mainSet.has(normToken(token));
+    let card = null, snap = null, cardId = null;
+    if (inMain) {
+      cardId = 'chan-' + i;
+      card = skeletonCard(token);
+      card.id = cardId;
+      cardsEl.appendChild(card);
+
+      snap = document.createElement('div');
+      snap.className = 'snap';
+      snap.innerHTML = `<div class="snap-head">
+          <div class="skeleton" style="width:38px;height:38px;border-radius:50%"></div>
+          <div style="min-width:0"><div class="name">${esc(token)}</div><div class="handle">loading…</div></div>
+        </div>`;
+      snapEl.appendChild(snap);
+    }
+
     return (async () => {
       try {
         const channel = await resolveChannel(token);
-        const videos = await recentVideos(channel, count);
-        renderCard(card, channel, videos);
+        // Fetch a deeper slice of uploads for period analysis; show only `count`.
+        const videos = await recentVideos(channel, ANALYZE_COUNT);
+        if (inMain) { renderCard(card, channel, videos.slice(0, count)); renderSnap(snap, channel, cardId); }
+        results.push({ token, channel, videos, inMain, cardId });
       } catch (e) {
-        card.innerHTML = `<div class="card-head"><div><div class="name">${esc(token)}</div></div></div>
-          <div class="state error">⚠ ${esc(e.message)}</div>`;
+        if (inMain) {
+          card.innerHTML = `<div class="card-head"><div><div class="name">${esc(token)}</div></div></div>
+            <div class="state error">⚠ ${esc(e.message)}</div>`;
+          snap.className = 'snap error';
+          snap.innerHTML = `<div class="snap-head"><div style="min-width:0"><div class="name">${esc(token)}</div><div class="handle">⚠ failed to load</div></div></div>`;
+        }
       }
     })();
   });
 
   await Promise.allSettled(tasks);
+  LAST_RESULTS = results;
+  getCategories().forEach((cat, ci) => renderCategoryTab(cat, ci, results));
+  renderPeriodFilters();
+  renderPeriodRow();
+  $('#allCount').textContent = channels.length;
   $('#updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+/* ---------- tabs + category panels (built from config) ---------- */
+function buildTabs(categories) {
+  const tabs = $('#tabs');
+  const active = tabs.querySelector('.tab.active')?.dataset.tab || 'all';
+  let html = `<button class="tab" data-tab="all">All Channels<span class="count" id="allCount"></span></button>`;
+  categories.forEach((cat, ci) => {
+    html += `<button class="tab" data-tab="cat-${ci}">${esc(cat.name)}<span class="count" id="catCount-${ci}"></span></button>`;
+  });
+  tabs.innerHTML = html;
+  tabs.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+  // Restore previous selection if it still exists, else fall back to All.
+  switchTab(tabs.querySelector(`.tab[data-tab="${active}"]`) ? active : 'all');
+}
+
+function buildCategoryPanels(categories) {
+  const wrap = $('#category-panels');
+  wrap.innerHTML = categories.map((cat, ci) => `
+    <div id="panel-cat-${ci}" hidden>
+      <section id="cat-agg-${ci}" class="agg-grid"></section>
+      <div class="period-head" id="cat-phead-${ci}" hidden>
+        <div class="section-title">Recent activity</div>
+        <div class="period-filters" id="cat-pfilters-${ci}"></div>
+      </div>
+      <p class="period-note" id="cat-pnote-${ci}" hidden>Videos <b>published</b> in the window, with their current (lifetime) views &amp; likes. The Data API can't report true per-period views or watch time — that needs OAuth + the Analytics API.</p>
+      <section id="period-snapshot-cat-${ci}" class="snap-grid"></section>
+      <div class="section-title" id="cat-snaptitle-${ci}" hidden>${esc(cat.name)} channels</div>
+      <section id="cat-snap-${ci}" class="snap-grid"></section>
+      <div class="section-title" id="cat-detailtitle-${ci}" hidden>Details</div>
+      <section id="cat-cards-${ci}"></section>
+      <div class="empty" id="cat-empty-${ci}" hidden>No channels in <b>${esc(cat.name)}</b> yet — open <b>⚙ Settings</b> and add channels to this category.</div>
+    </div>`).join('');
+}
+
+function renderCategoryTab(cat, ci, results) {
+  const catResults = results.filter(r => channelInList(r, cat.channels));
+  const snapEl = $(`#cat-snap-${ci}`);
+  const cardsEl = $(`#cat-cards-${ci}`);
+  snapEl.innerHTML = '';
+  cardsEl.innerHTML = '';
+  $(`#catCount-${ci}`).textContent = catResults.length || '';
+
+  const has = catResults.length > 0;
+  $(`#cat-empty-${ci}`).hidden = has;
+  $(`#cat-snaptitle-${ci}`).hidden = !has;
+  $(`#cat-detailtitle-${ci}`).hidden = !has;
+  if (!has) { $(`#cat-agg-${ci}`).innerHTML = ''; return; }
+
+  renderAggInto($(`#cat-agg-${ci}`), catResults);
+  catResults.forEach((r, i) => {
+    const cardId = `cat-${ci}-card-${i}`;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = cardId;
+    renderCard(card, r.channel, r.videos.slice(0, CONFIG.recentCount || 5));
+    cardsEl.appendChild(card);
+
+    const snap = document.createElement('div');
+    snap.className = 'snap';
+    renderSnap(snap, r.channel, cardId);
+    snapEl.appendChild(snap);
+  });
+}
+
+/* ---------- tab switching ---------- */
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  $('#panel-all').hidden = name !== 'all';
+  document.querySelectorAll('#category-panels > div').forEach(p =>
+    p.hidden = p.id !== 'panel-' + name);
+}
+
 /* ---------- settings UI ---------- */
+function catRow(name, channels) {
+  const row = document.createElement('div');
+  row.className = 'cat-row';
+  row.innerHTML = `
+    <input type="text" class="cat-name" placeholder="Category name" value="${esc(name || '')}" />
+    <textarea class="cat-channels" placeholder="@channel1&#10;@channel2"></textarea>
+    <button type="button" class="cat-del" title="Remove category">✕</button>`;
+  row.querySelector('.cat-channels').value = (channels || []).join('\n');
+  row.querySelector('.cat-del').addEventListener('click', () => row.remove());
+  return row;
+}
+function renderCatEditor(categories) {
+  const wrap = $('#catEditor');
+  wrap.innerHTML = '';
+  categories.forEach(cat => wrap.appendChild(catRow(cat.name, cat.channels)));
+}
+function readCatEditor() {
+  return [...$('#catEditor').querySelectorAll('.cat-row')].map(row => ({
+    name: row.querySelector('.cat-name').value.trim() || 'Category',
+    channels: row.querySelector('.cat-channels').value.split('\n').map(s => s.trim()).filter(Boolean),
+  }));
+}
+
 function openSettings(force) {
   const el = $('#settings');
   el.hidden = force === true ? false : !el.hidden;
   if (!el.hidden) {
     $('#apiKey').value = CONFIG.apiKey || '';
     $('#channels').value = (CONFIG.channels || []).join('\n');
+    renderCatEditor(getCategories());
     $('#recentCount').value = String(CONFIG.recentCount || 5);
   }
 }
 
 $('#settingsBtn').addEventListener('click', () => openSettings());
 $('#refreshBtn').addEventListener('click', () => load());
+$('#addCatBtn').addEventListener('click', () => $('#catEditor').appendChild(catRow('', [])));
 $('#saveBtn').addEventListener('click', () => {
   CONFIG = {
     apiKey: $('#apiKey').value.trim(),
     channels: $('#channels').value.split('\n').map(s => s.trim()).filter(Boolean),
+    categories: readCatEditor(),
     recentCount: Number($('#recentCount').value) || 5,
+    period: CONFIG.period,
   };
   saveConfig(CONFIG);
   $('#saveMsg').textContent = 'Saved ✓';
