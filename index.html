@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YouTube Channel Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #181b22;
+    --panel-2: #1f232c;
+    --border: #2a2f3a;
+    --text: #e7e9ee;
+    --muted: #9aa2b1;
+    --accent: #ff3b30;
+    --accent-soft: #ff3b3022;
+    --good: #34c759;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: rgba(15,17,21,.85);
+    backdrop-filter: blur(10px); z-index: 10;
+  }
+  .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:18px; }
+  .logo .dot { width:26px; height:18px; background:var(--accent); border-radius:5px; position:relative; }
+  .logo .dot::after { content:""; position:absolute; left:9px; top:4px; border-left:7px solid #fff; border-top:5px solid transparent; border-bottom:5px solid transparent; }
+  header .spacer { flex:1; }
+  header .meta { color: var(--muted); font-size: 13px; }
+  button {
+    font: inherit; color: var(--text); background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 14px; cursor: pointer; transition: .15s;
+  }
+  button:hover { border-color: #3a414f; background: #262b35; }
+  button.primary { background: var(--accent); border-color: var(--accent); color:#fff; font-weight:600; }
+  button.primary:hover { filter: brightness(1.08); }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px; }
+
+  /* Settings */
+  #settings { background: var(--panel); border:1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 24px; }
+  #settings h2 { margin: 0 0 4px; font-size: 16px; }
+  #settings .hint { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
+  .field { margin-bottom: 16px; }
+  .field label { display:block; font-size: 13px; font-weight:600; margin-bottom: 6px; }
+  .field .sub { color: var(--muted); font-weight: 400; }
+  input[type=text], input[type=password], textarea, select {
+    width: 100%; background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font: inherit;
+  }
+  textarea { resize: vertical; min-height: 84px; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+  .row { display:flex; gap: 16px; flex-wrap: wrap; }
+  .row .field { flex: 1; min-width: 180px; }
+  .settings-actions { display:flex; gap: 10px; align-items:center; }
+
+  /* Cards */
+  #cards { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  .card { background: var(--panel); border:1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .card-head { display:flex; align-items:center; gap: 14px; padding: 18px 20px; }
+  .card-head img { width: 56px; height: 56px; border-radius: 50%; background: var(--panel-2); object-fit: cover; }
+  .card-head .name { font-weight: 700; font-size: 17px; }
+  .card-head .handle { color: var(--muted); font-size: 13px; }
+  .card-head a { color: inherit; text-decoration: none; }
+  .card-head a:hover .name { text-decoration: underline; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .stat { background: var(--panel); padding: 16px 20px; text-align:center; }
+  .stat .num { font-size: 26px; font-weight: 750; letter-spacing: -.5px; }
+  .stat .lbl { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+
+  .recent { padding: 8px 20px 16px; }
+  .recent h3 { font-size: 12px; text-transform: uppercase; letter-spacing:.5px; color: var(--muted); margin: 14px 4px 6px; }
+  .vid { display:flex; align-items:center; gap: 12px; padding: 8px 6px; border-radius: 10px; }
+  .vid:hover { background: var(--panel-2); }
+  .vid .thumb { width: 92px; height: 52px; border-radius: 8px; object-fit: cover; background: var(--panel-2); flex: none; }
+  .vid .vinfo { flex: 1; min-width: 0; }
+  .vid .vtitle { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vid .vtitle a { color: inherit; text-decoration: none; }
+  .vid .vtitle a:hover { text-decoration: underline; }
+  .vid .vmeta { color: var(--muted); font-size: 12.5px; margin-top: 3px; display:flex; gap: 14px; flex-wrap: wrap; }
+  .vid .vmeta b { color: var(--text); font-weight: 600; }
+
+  .state { padding: 22px 20px; color: var(--muted); font-size: 14px; }
+  .state.error { color: #ff8f87; }
+  .skeleton { background: linear-gradient(90deg,#1c2027 25%,#242a34 37%,#1c2027 63%); background-size: 400% 100%; animation: sh 1.3s ease infinite; }
+  @keyframes sh { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
+  .empty { text-align:center; color: var(--muted); padding: 60px 20px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span class="dot"></span> Channel Dashboard</div>
+  <div class="spacer"></div>
+  <div class="meta" id="updated"></div>
+  <button id="refreshBtn">↻ Refresh</button>
+  <button id="settingsBtn">⚙ Settings</button>
+</header>
+
+<main>
+  <section id="settings" hidden>
+    <h2>Settings</h2>
+    <p class="hint">Your API key and channel list are stored only in this browser (localStorage). Nothing is uploaded anywhere except direct calls to the YouTube Data API.</p>
+    <div class="field">
+      <label>YouTube Data API key</label>
+      <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off" />
+    </div>
+    <div class="field">
+      <label>Channels <span class="sub">— one per line. Handle (<code>@mkbhd</code>), channel ID (<code>UC...</code>), or full URL.</span></label>
+      <textarea id="channels" placeholder="@mkbhd&#10;@veritasium&#10;UCXuqSBlHAE6Xw-yeJA0Tunw"></textarea>
+    </div>
+    <div class="row">
+      <div class="field" style="max-width:200px">
+        <label>Recent videos to show</label>
+        <select id="recentCount">
+          <option>3</option><option selected>5</option><option>8</option><option>10</option>
+        </select>
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="primary" id="saveBtn">Save &amp; Load</button>
+      <span class="meta" id="saveMsg"></span>
+    </div>
+  </section>
+
+  <section id="cards"></section>
+  <div class="empty" id="empty" hidden>No channels yet — open <b>⚙ Settings</b> to add your API key and channels.</div>
+</main>
+
+<script>
+const API = 'https://www.googleapis.com/youtube/v3/';
+const LS_KEY = 'ytDashConfig';
+
+const $ = sel => document.querySelector(sel);
+let CONFIG = loadConfig();
+
+/* ---------- config ---------- */
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveConfig(c) { localStorage.setItem(LS_KEY, JSON.stringify(c)); }
+
+/* ---------- formatting ---------- */
+function fmt(n) {
+  n = Number(n);
+  if (!isFinite(n)) return '—';
+  const a = Math.abs(n);
+  if (a >= 1e9) return trim(n / 1e9) + 'B';
+  if (a >= 1e6) return trim(n / 1e6) + 'M';
+  if (a >= 1e3) return trim(n / 1e3) + 'K';
+  return n.toLocaleString();
+}
+function trim(x) { return (x >= 100 ? Math.round(x) : x.toFixed(1).replace(/\.0$/, '')).toString(); }
+function exact(n) { const v = Number(n); return isFinite(v) ? v.toLocaleString() : ''; }
+function relTime(iso) {
+  const then = new Date(iso).getTime();
+  if (!isFinite(then)) return '';
+  const s = (Date.now() - then) / 1000;
+  const u = [['year',31536000],['month',2592000],['week',604800],['day',86400],['hour',3600],['minute',60]];
+  for (const [name, secs] of u) {
+    const v = Math.floor(s / secs);
+    if (v >= 1) return v + ' ' + name + (v > 1 ? 's' : '') + ' ago';
+  }
+  return 'just now';
+}
+
+/* ---------- API ---------- */
+async function api(endpoint, params) {
+  const url = new URL(API + endpoint);
+  url.searchParams.set('key', CONFIG.apiKey);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  const res = await fetch(url);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error?.message || ('HTTP ' + res.status));
+  return data;
+}
+
+async function resolveChannel(token) {
+  token = token.trim();
+  if (!token) return null;
+  const part = 'snippet,statistics,contentDetails';
+  let params = null, custom = null;
+
+  if (/youtu\.?be/.test(token)) {
+    try {
+      const u = new URL(token.startsWith('http') ? token : 'https://' + token);
+      const p = decodeURIComponent(u.pathname);
+      let m;
+      if ((m = p.match(/\/channel\/(UC[\w-]{22})/))) params = { id: m[1] };
+      else if ((m = p.match(/\/@([^/]+)/))) params = { forHandle: m[1] };
+      else if ((m = p.match(/\/user\/([^/]+)/))) params = { forUsername: m[1] };
+      else if ((m = p.match(/\/c\/([^/]+)/))) custom = m[1];
+      else if ((m = p.match(/\/([^/]+)/))) params = { forHandle: m[1].replace(/^@/, '') };
+    } catch {}
+  } else if (/^UC[\w-]{22}$/.test(token)) {
+    params = { id: token };
+  } else {
+    params = { forHandle: token.replace(/^@/, '') };
+  }
+
+  if (params) {
+    const d = await api('channels', { part, ...params });
+    if (d.items && d.items.length) return d.items[0];
+    custom = custom || params.forHandle || params.forUsername;
+  }
+  // Fallback: search by name (costs more quota, fuzzy)
+  if (custom) {
+    const s = await api('search', { part: 'snippet', type: 'channel', q: custom, maxResults: 1 });
+    const id = s.items?.[0]?.snippet?.channelId || s.items?.[0]?.id?.channelId;
+    if (id) {
+      const d = await api('channels', { part, id });
+      if (d.items && d.items.length) return d.items[0];
+    }
+  }
+  throw new Error('Channel not found: "' + token + '"');
+}
+
+async function recentVideos(channel, count) {
+  const uploads = channel.contentDetails?.relatedPlaylists?.uploads;
+  if (!uploads) return [];
+  const pl = await api('playlistItems', { part: 'contentDetails', playlistId: uploads, maxResults: count });
+  const ids = (pl.items || []).map(i => i.contentDetails.videoId).filter(Boolean);
+  if (!ids.length) return [];
+  const v = await api('videos', { part: 'snippet,statistics', id: ids.join(',') });
+  return (v.items || []).sort((a, b) =>
+    new Date(b.snippet.publishedAt) - new Date(a.snippet.publishedAt));
+}
+
+/* ---------- rendering ---------- */
+function statBlock(num, label, title) {
+  return `<div class="stat"><div class="num" title="${title || ''}">${num}</div><div class="lbl">${label}</div></div>`;
+}
+
+function renderCard(card, channel, videos) {
+  const s = channel.statistics || {};
+  const sn = channel.snippet || {};
+  const subs = s.hiddenSubscriberCount ? 'Hidden' : fmt(s.subscriberCount);
+  const thumb = sn.thumbnails?.default?.url || '';
+  const url = 'https://www.youtube.com/channel/' + channel.id;
+  const handle = sn.customUrl ? (sn.customUrl.startsWith('@') ? sn.customUrl : '@' + sn.customUrl) : '';
+
+  const vids = videos.map(v => {
+    const vs = v.statistics || {};
+    const t = v.snippet?.thumbnails?.medium?.url || v.snippet?.thumbnails?.default?.url || '';
+    const vurl = 'https://www.youtube.com/watch?v=' + v.id;
+    return `<div class="vid">
+      <img class="thumb" src="${t}" alt="" loading="lazy" />
+      <div class="vinfo">
+        <div class="vtitle"><a href="${vurl}" target="_blank" rel="noopener">${esc(v.snippet?.title || '')}</a></div>
+        <div class="vmeta">
+          <span>${relTime(v.snippet?.publishedAt)}</span>
+          <span><b>${fmt(vs.viewCount)}</b> views</span>
+          <span><b>${fmt(vs.likeCount)}</b> likes</span>
+          <span><b>${fmt(vs.commentCount)}</b> comments</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="card-head">
+      <a href="${url}" target="_blank" rel="noopener"><img src="${thumb}" alt="" /></a>
+      <div>
+        <div class="name"><a href="${url}" target="_blank" rel="noopener">${esc(sn.title || channel.id)}</a></div>
+        <div class="handle">${esc(handle)}</div>
+      </div>
+    </div>
+    <div class="stats">
+      ${statBlock(subs, 'Subscribers', exact(s.subscriberCount))}
+      ${statBlock(fmt(s.viewCount), 'Total Views', exact(s.viewCount))}
+      ${statBlock(fmt(s.videoCount), 'Videos', exact(s.videoCount))}
+    </div>
+    <div class="recent">
+      <h3>Recent videos</h3>
+      ${vids || '<div class="state">No recent videos found.</div>'}
+    </div>`;
+}
+
+function esc(str) {
+  return String(str).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+function skeletonCard(label) {
+  const c = document.createElement('div');
+  c.className = 'card';
+  c.innerHTML = `<div class="card-head">
+      <div class="thumb skeleton" style="width:56px;height:56px;border-radius:50%"></div>
+      <div><div class="name">${esc(label)}</div><div class="handle">loading…</div></div>
+    </div>
+    <div class="state">Fetching data…</div>`;
+  return c;
+}
+
+/* ---------- main load ---------- */
+async function load() {
+  const cardsEl = $('#cards');
+  const emptyEl = $('#empty');
+  cardsEl.innerHTML = '';
+
+  const channels = (CONFIG.channels || []).map(s => s.trim()).filter(Boolean);
+  if (!CONFIG.apiKey || !channels.length) {
+    emptyEl.hidden = false;
+    if (!CONFIG.apiKey || !channels.length) openSettings(true);
+    return;
+  }
+  emptyEl.hidden = true;
+  const count = CONFIG.recentCount || 5;
+
+  // Create a card per channel up-front, then fill in parallel.
+  const tasks = channels.map(token => {
+    const card = skeletonCard(token);
+    cardsEl.appendChild(card);
+    return (async () => {
+      try {
+        const channel = await resolveChannel(token);
+        const videos = await recentVideos(channel, count);
+        renderCard(card, channel, videos);
+      } catch (e) {
+        card.innerHTML = `<div class="card-head"><div><div class="name">${esc(token)}</div></div></div>
+          <div class="state error">⚠ ${esc(e.message)}</div>`;
+      }
+    })();
+  });
+
+  await Promise.allSettled(tasks);
+  $('#updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+/* ---------- settings UI ---------- */
+function openSettings(force) {
+  const el = $('#settings');
+  el.hidden = force === true ? false : !el.hidden;
+  if (!el.hidden) {
+    $('#apiKey').value = CONFIG.apiKey || '';
+    $('#channels').value = (CONFIG.channels || []).join('\n');
+    $('#recentCount').value = String(CONFIG.recentCount || 5);
+  }
+}
+
+$('#settingsBtn').addEventListener('click', () => openSettings());
+$('#refreshBtn').addEventListener('click', () => load());
+$('#saveBtn').addEventListener('click', () => {
+  CONFIG = {
+    apiKey: $('#apiKey').value.trim(),
+    channels: $('#channels').value.split('\n').map(s => s.trim()).filter(Boolean),
+    recentCount: Number($('#recentCount').value) || 5,
+  };
+  saveConfig(CONFIG);
+  $('#saveMsg').textContent = 'Saved ✓';
+  setTimeout(() => ($('#saveMsg').textContent = ''), 2000);
+  $('#settings').hidden = true;
+  load();
+});
+
+/* ---------- boot ---------- */
+load();
+</script>
+</body>
+</html>
