@@ -3,11 +3,6 @@
 A single-file, zero-install dashboard for tracking your YouTube channels' key public
 metrics. Open `index.html` in a browser — that's it.
 
-> **Also in this repo:** [`android/`](android/) — **DuoPlan**, a native Android app
-> for couples to decide what to eat and what to do (suggest → approve / decline /
-> ask-for-another), syncing through a shared Google Calendar. See
-> [`android/README.md`](android/README.md). It's independent of the dashboard below.
-
 ## Use it
 1. Open `index.html` (double-click, or `open index.html` on macOS).
 2. Click **⚙ Settings**.

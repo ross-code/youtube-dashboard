@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<full-backup-content>
-    <!-- DataStore holds only the selected calendar id and cached email; safe to
-         back up. No OAuth tokens are persisted by the app. -->
-</full-backup-content>

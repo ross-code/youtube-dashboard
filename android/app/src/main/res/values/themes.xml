@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Base theme. The Compose UI applies the real Material3 color scheme at
-         runtime (incl. dynamic color); this only styles the splash window. -->
-    <style name="Theme.DuoPlan" parent="android:Theme.Material.Light.NoActionBar" />
-</resources>
