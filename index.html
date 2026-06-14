@@ -167,6 +167,12 @@
     flex: none; padding: 8px 10px; color: var(--muted); align-self: stretch;
   }
   .cat-row .cat-del:hover { color: #ff8f87; border-color: #ff8f87; }
+
+  /* Sort control (header) */
+  .sort-ctl { display: flex; align-items: center; gap: 6px; }
+  .sort-ctl .sort-lbl { color: var(--muted); font-size: 13px; }
+  .sort-ctl select { width: auto; padding: 7px 10px; border-radius: 10px; }
+  .sort-ctl #sortDir { padding: 7px 11px; font-size: 14px; line-height: 1; min-width: 36px; }
 </style>
 </head>
 <body>
@@ -174,6 +180,16 @@
   <div class="logo"><span class="dot"></span> Channel Dashboard</div>
   <div class="spacer"></div>
   <div class="meta" id="updated"></div>
+  <div class="sort-ctl" id="sortCtl" hidden>
+    <span class="sort-lbl">Sort</span>
+    <select id="sortKey" title="Sort channels by">
+      <option value="name">Name</option>
+      <option value="subs">Subscribers</option>
+      <option value="views">Views</option>
+      <option value="videos">Videos</option>
+    </select>
+    <button id="sortDir" title="Toggle ascending / descending">↓</button>
+  </div>
   <button id="refreshBtn">↻ Refresh</button>
   <button id="settingsBtn">⚙ Settings</button>
 </header>
@@ -467,6 +483,7 @@ function aggBlock(num, label, note, muted) {
 function renderAggInto(el, results) {
   let subs = 0, views = 0, vids = 0, hiddenSubs = 0;
   for (const r of results) {
+    if (!r.channel) continue;
     const s = r.channel.statistics || {};
     if (s.hiddenSubscriberCount) hiddenSubs++; else subs += Number(s.subscriberCount) || 0;
     views += Number(s.viewCount) || 0;
@@ -486,13 +503,14 @@ let LAST_RESULTS = [];     // results of the most recent load(), for re-filterin
 
 const DAY = 86400000;
 const PERIODS = [
+  { key: 'all', label: 'All time',      start: () => 0 },
   { key: '7d',  label: 'Last 7 days',   start: () => Date.now() - 7 * DAY },
   { key: '28d', label: 'Last 28 days',  start: () => Date.now() - 28 * DAY },
   { key: 'mtd', label: 'Month to date', start: () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1).getTime(); } },
   { key: '90d', label: 'Last 90 days',  start: () => Date.now() - 90 * DAY },
   { key: 'ytd', label: 'Year to date',  start: () => { const d = new Date(); return new Date(d.getFullYear(), 0, 1).getTime(); } },
 ];
-function currentPeriod() { return PERIODS.find(p => p.key === CONFIG.period) || PERIODS[1]; }
+function currentPeriod() { return PERIODS.find(p => p.key === CONFIG.period) || PERIODS.find(p => p.key === '28d'); }
 
 // Stats for videos PUBLISHED within [start, now]. Views/likes are lifetime totals.
 function periodStats(videos, startMs) {
@@ -516,6 +534,64 @@ function periodStats(videos, startMs) {
 function periodStatCell(num, label) {
   const cls = num === 0 ? ' zero' : '';
   return `<div class="snap-stat"><div class="num${cls}">${fmt(num)}</div><div class="lbl">${label}</div></div>`;
+}
+
+/* ---------- sorting ---------- */
+function sortChannels(list) {
+  const key = CONFIG.sortKey || 'name';
+  const dir = CONFIG.sortDir === 'desc' ? -1 : 1;
+  const numVal = r => {
+    const s = r.channel?.statistics || {};
+    if (key === 'views') return Number(s.viewCount) || 0;
+    if (key === 'videos') return Number(s.videoCount) || 0;
+    if (key === 'subs') return s.hiddenSubscriberCount ? -1 : (Number(s.subscriberCount) || 0);
+    return null; // name → use string comparison
+  };
+  return [...list].sort((a, b) => {
+    // Failed lookups (no channel data) always sort to the bottom.
+    const fa = !a.channel, fb = !b.channel;
+    if (fa !== fb) return fa ? 1 : -1;
+    if (key === 'name') {
+      const na = (a.channel?.snippet?.title || a.token || '').toLowerCase();
+      const nb = (b.channel?.snippet?.title || b.token || '').toLowerCase();
+      return na.localeCompare(nb) * dir;
+    }
+    return (numVal(a) - numVal(b)) * dir;
+  });
+}
+
+// Re-render every channel list from LAST_RESULTS in the current sort order
+// (no refetch). Called after a load completes and whenever the sort changes.
+function applySort() {
+  renderAllTab();
+  getCategories().forEach((cat, ci) => renderCategoryTab(cat, ci, LAST_RESULTS));
+  renderPeriodRow();
+}
+
+function renderAllTab() {
+  const snapEl = $('#snapshot');
+  const cardsEl = $('#cards');
+  snapEl.innerHTML = '';
+  cardsEl.innerHTML = '';
+  const list = sortChannels(LAST_RESULTS.filter(r => r.inMain));
+  for (const r of list) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = r.cardId;
+    const snap = document.createElement('div');
+    snap.className = 'snap';
+    if (r.error || !r.channel) {
+      card.innerHTML = `<div class="card-head"><div><div class="name">${esc(r.token)}</div></div></div>
+        <div class="state error">⚠ ${esc(r.error || 'Failed to load')}</div>`;
+      snap.className = 'snap error';
+      snap.innerHTML = `<div class="snap-head"><div style="min-width:0"><div class="name">${esc(r.token)}</div><div class="handle">⚠ failed to load</div></div></div>`;
+    } else {
+      renderCard(card, r.channel, r.videos.slice(0, CONFIG.recentCount || 5));
+      renderSnap(snap, r.channel, r.cardId);
+    }
+    cardsEl.appendChild(card);
+    snapEl.appendChild(snap);
+  }
 }
 
 // All views (All-tab + each category) share one period selection.
@@ -553,12 +629,29 @@ function renderPeriodFilters() {
   }
 }
 
-function periodTile(r, startMs, cardId) {
-  const st = periodStats(r.videos, startMs);
+function periodTile(r, period, cardId) {
   const sn = r.channel.snippet || {};
   const thumb = sn.thumbnails?.default?.url || '';
   const handle = sn.customUrl ? (sn.customUrl.startsWith('@') ? sn.customUrl : '@' + sn.customUrl) : '';
-  const vidLabel = st.capped ? (st.count + '+') : st.count;
+
+  let statsHtml;
+  if (period.key === 'all') {
+    // Lifetime totals straight from the channel's public statistics.
+    const s = r.channel.statistics || {};
+    const subs = s.hiddenSubscriberCount ? 'Hidden' : fmt(s.subscriberCount);
+    statsHtml = `
+      <div class="snap-stat"><div class="num" title="${exact(s.subscriberCount)}">${subs}</div><div class="lbl">Subs</div></div>
+      <div class="snap-stat"><div class="num" title="${exact(s.viewCount)}">${fmt(s.viewCount)}</div><div class="lbl">Views</div></div>
+      <div class="snap-stat"><div class="num" title="${exact(s.videoCount)}">${fmt(s.videoCount)}</div><div class="lbl">Videos</div></div>`;
+  } else {
+    // Videos PUBLISHED in the window, with their (lifetime) views/likes.
+    const st = periodStats(r.videos, period.start());
+    const vidLabel = st.capped ? (st.count + '+') : st.count;
+    statsHtml = `
+      <div class="snap-stat"><div class="num${st.count === 0 ? ' zero' : ''}">${vidLabel}</div><div class="lbl">Videos</div></div>
+      ${periodStatCell(st.views, 'Views')}
+      ${periodStatCell(st.likes, 'Likes')}`;
+  }
 
   const snap = document.createElement('div');
   snap.className = 'snap';
@@ -570,11 +663,7 @@ function periodTile(r, startMs, cardId) {
         <div class="handle">${esc(handle)}</div>
       </div>
     </div>
-    <div class="snap-stats">
-      <div class="snap-stat"><div class="num${st.count === 0 ? ' zero' : ''}">${vidLabel}</div><div class="lbl">Videos</div></div>
-      ${periodStatCell(st.views, 'Views')}
-      ${periodStatCell(st.likes, 'Likes')}
-    </div>`;
+    <div class="snap-stats">${statsHtml}</div>`;
   if (cardId) {
     snap.style.cursor = 'pointer';
     snap.onclick = () => {
@@ -588,17 +677,24 @@ function periodTile(r, startMs, cardId) {
 }
 
 function renderPeriodRow() {
-  const startMs = currentPeriod().start();
+  const period = currentPeriod();
+  const isAll = period.key === 'all';
   for (const v of periodViews()) {
     const el = $(v.row);
     if (!el) continue;
-    const rows = LAST_RESULTS.filter(v.filter);
+    // Sort identically to the category/detail lists so index-based card ids align.
+    const rows = sortChannels(LAST_RESULTS.filter(v.filter));
     const show = rows.length > 0;
-    if ($(v.head)) $(v.head).hidden = !show;
-    if ($(v.note)) $(v.note).hidden = !show;
+    const head = $(v.head);
+    if (head) {
+      head.hidden = !show;
+      const title = head.querySelector('.section-title');
+      if (title) title.textContent = isAll ? 'All-time totals' : 'Recent activity';
+    }
+    if ($(v.note)) $(v.note).hidden = !show || isAll; // window note doesn't apply to all-time
     el.innerHTML = '';
     if (!show) continue;
-    rows.forEach((r, i) => el.appendChild(periodTile(r, startMs, v.cardId(r, i))));
+    rows.forEach((r, i) => { if (r.channel) el.appendChild(periodTile(r, period, v.cardId(r, i))); });
   }
 }
 
@@ -679,15 +775,18 @@ async function load() {
           snap.className = 'snap error';
           snap.innerHTML = `<div class="snap-head"><div style="min-width:0"><div class="name">${esc(token)}</div><div class="handle">⚠ failed to load</div></div></div>`;
         }
+        results.push({ token, channel: null, videos: [], inMain, cardId, error: e.message });
       }
     })();
   });
 
   await Promise.allSettled(tasks);
   LAST_RESULTS = results;
-  getCategories().forEach((cat, ci) => renderCategoryTab(cat, ci, results));
+  $('#sortCtl').hidden = false;
+  // Re-render everything in the chosen sort order (replaces the progressive,
+  // config-order content rendered during fetch).
   renderPeriodFilters();
-  renderPeriodRow();
+  applySort();
   $('#allCount').textContent = channels.length;
   $('#updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
@@ -726,7 +825,8 @@ function buildCategoryPanels(categories) {
 }
 
 function renderCategoryTab(cat, ci, results) {
-  const catResults = results.filter(r => channelInList(r, cat.channels));
+  // Sort identically to renderPeriodRow so index-based card ids line up.
+  const catResults = sortChannels(results.filter(r => channelInList(r, cat.channels)));
   const snapEl = $(`#cat-snap-${ci}`);
   const cardsEl = $(`#cat-cards-${ci}`);
   snapEl.innerHTML = '';
@@ -745,12 +845,18 @@ function renderCategoryTab(cat, ci, results) {
     const card = document.createElement('div');
     card.className = 'card';
     card.id = cardId;
-    renderCard(card, r.channel, r.videos.slice(0, CONFIG.recentCount || 5));
-    cardsEl.appendChild(card);
-
     const snap = document.createElement('div');
     snap.className = 'snap';
-    renderSnap(snap, r.channel, cardId);
+    if (r.error || !r.channel) {
+      card.innerHTML = `<div class="card-head"><div><div class="name">${esc(r.token)}</div></div></div>
+        <div class="state error">⚠ ${esc(r.error || 'Failed to load')}</div>`;
+      snap.className = 'snap error';
+      snap.innerHTML = `<div class="snap-head"><div style="min-width:0"><div class="name">${esc(r.token)}</div><div class="handle">⚠ failed to load</div></div></div>`;
+    } else {
+      renderCard(card, r.channel, r.videos.slice(0, CONFIG.recentCount || 5));
+      renderSnap(snap, r.channel, cardId);
+    }
+    cardsEl.appendChild(card);
     snapEl.appendChild(snap);
   });
 }
@@ -808,6 +914,8 @@ $('#saveBtn').addEventListener('click', () => {
     categories: readCatEditor(),
     recentCount: Number($('#recentCount').value) || 5,
     period: CONFIG.period,
+    sortKey: CONFIG.sortKey,
+    sortDir: CONFIG.sortDir,
   };
   saveConfig(CONFIG);
   $('#saveMsg').textContent = 'Saved ✓';
@@ -815,6 +923,30 @@ $('#saveBtn').addEventListener('click', () => {
   $('#settings').hidden = true;
   load();
 });
+
+/* ---------- sort controls ---------- */
+function syncSortUI() {
+  $('#sortKey').value = CONFIG.sortKey || 'name';
+  $('#sortDir').textContent = (CONFIG.sortDir === 'desc') ? '↓' : '↑';
+  $('#sortDir').title = (CONFIG.sortDir === 'desc')
+    ? 'Descending (most first) — click for ascending'
+    : 'Ascending (least / A→Z) — click for descending';
+}
+$('#sortKey').addEventListener('change', () => {
+  CONFIG.sortKey = $('#sortKey').value;
+  // Sensible default direction per field: A→Z for names, most-first for numbers.
+  CONFIG.sortDir = CONFIG.sortKey === 'name' ? 'asc' : 'desc';
+  saveConfig(CONFIG);
+  syncSortUI();
+  applySort();
+});
+$('#sortDir').addEventListener('click', () => {
+  CONFIG.sortDir = (CONFIG.sortDir === 'desc') ? 'asc' : 'desc';
+  saveConfig(CONFIG);
+  syncSortUI();
+  applySort();
+});
+syncSortUI();
 
 /* ---------- boot ---------- */
 load();
