@@ -8,6 +8,13 @@ A zero-dependency, single-file dashboard for tracking public stats of YouTube ch
 All code, styles, and markup live in `index.html` — there is no build step, package
 manager, server, or test suite. "Running" it means opening `index.html` in a browser.
 
+There is also a thin Android wrapper in `android/` (Kotlin + Gradle): a WebView app
+that serves the same `index.html` via `WebViewAssetLoader` on the
+`https://appassets.androidplatform.net` origin. The root `index.html` stays the single
+source of truth — a Gradle `Sync` task in `android/app/build.gradle.kts` copies it into
+assets at build time; never commit a second copy under `android/`. Building requires
+the Android SDK (see `android/README.md`).
+
 ## Running
 
 - Open directly: `open index.html` (macOS).

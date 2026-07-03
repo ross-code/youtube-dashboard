@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors the CSS variables in index.html -->
+    <color name="background">#0F1115</color>
+    <color name="accent">#FF3B30</color>
+</resources>

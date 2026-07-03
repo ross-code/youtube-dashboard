@@ -36,6 +36,11 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
+## Android app
+An Android wrapper lives in [`android/`](android/) — a WebView app that serves this
+same `index.html` (copied from the repo root at build time). See
+[`android/README.md`](android/README.md) for build instructions.
+
 ## Quota
 Each channel costs ~3 quota units per refresh (channel + playlist + video stats lookups).
 The default daily quota is 10,000 units, so you can refresh freely.
